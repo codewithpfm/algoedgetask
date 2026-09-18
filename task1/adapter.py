@@ -352,7 +352,9 @@ class BrokerAdapter:
     def run(self) -> None:
         logger.info("adapter ready")
         while True:
-            for sock, _ in self.poller.poll():
+            # Timeout rather than an indefinite block, so Ctrl+C stops the bridge
+            # straight away instead of waiting for the next message.
+            for sock, _ in self.poller.poll(200):
                 msg = recv_json(sock)
                 if msg is None:
                     continue
