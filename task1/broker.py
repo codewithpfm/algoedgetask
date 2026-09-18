@@ -14,7 +14,7 @@ logger = logging.getLogger("broker")
 
 
 # =============================================================================
-# Wire helpers. Its own copy, so this script does not depend on the others.
+# Wire helpers, STandalone script 
 # =============================================================================
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds")
@@ -183,7 +183,11 @@ class MockBroker:
 
     def run(self) -> None:
         logger.info("mock broker ready")
+        poller = zmq.Poller()
+        poller.register(self.orders_in, zmq.POLLIN)
         while True:
+            if not poller.poll(200):
+                continue
             msg = recv_json(self.orders_in)
             if msg is None:
                 continue
